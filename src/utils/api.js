@@ -41,4 +41,13 @@ export const chatAPI = {
   clearHistory: () => api.delete('/chat/history')
 };
 
+// Workout API
+export const workoutAPI = {
+  logWorkout: (data) => api.post('/workouts/log', data),
+  getHistory: (page = 1, limit = 20) => api.get(`/workouts/history?page=${page}&limit=${limit}`),
+  getStats: () => api.get('/workouts/stats'),
+  getWorkout: (id) => api.get(`/workouts/${id}`),
+  deleteWorkout: (id) => api.delete(`/workouts/${id}`)
+};
+
 export default api;

@@ -4,6 +4,7 @@ import cors from 'cors';
 import connectDB from './db.js';
 import authRoutes from './routes/auth.js';
 import chatRoutes from './routes/chat.js';
+import workoutRoutes from './routes/workouts.js';
 
 // Load environment variables
 dotenv.config();
@@ -48,6 +49,7 @@ app.get('/api/health', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/workouts', workoutRoutes);
 
 // 404 handler
 app.use((req, res) => {

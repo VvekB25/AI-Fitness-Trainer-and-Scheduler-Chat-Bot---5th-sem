@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import '../styles/Auth.css';
 
 const Auth = () => {
@@ -13,6 +14,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
 
   const { login, signup } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
@@ -31,8 +33,13 @@ const Auth = () => {
       let result;
       if (isLogin) {
         result = await login(formData.email, formData.password);
+        // Login redirects to home automatically via AuthContext
       } else {
         result = await signup(formData.name, formData.email, formData.password);
+        // After signup, redirect to profile setup
+        if (result.success) {
+          navigate('/profile-setup');
+        }
       }
 
       if (!result.success) {

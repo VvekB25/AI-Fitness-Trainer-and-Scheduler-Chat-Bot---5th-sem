@@ -1,14 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { chatAPI } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import '../styles/Chat.css';
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showQuickActions, setShowQuickActions] = useState(true);
   const messagesEndRef = useRef(null);
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Load chat history
@@ -121,10 +124,54 @@ const Chat = () => {
         content: `Chat cleared! How can I help you today?`,
         timestamp: new Date().toISOString()
       }]);
+      setShowQuickActions(true);
     } catch (error) {
       console.error('Clear chat error:', error);
     }
   };
+
+  const handleQuickAction = (action) => {
+    setShowQuickActions(false);
+    setInput(action);
+    // Trigger send
+    setTimeout(() => {
+      const form = document.querySelector('.input-container');
+      form?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    }, 100);
+  };
+
+  const quickActions = [
+    {
+      icon: '🏋️',
+      label: 'Create Workout Plan',
+      prompt: 'Create a personalized workout plan for me based on my profile'
+    },
+    {
+      icon: '💪',
+      label: 'Today\'s Workout',
+      prompt: 'Give me a quick workout I can do today'
+    },
+    {
+      icon: '📝',
+      label: 'Log Workout',
+      action: () => navigate('/workouts')
+    },
+    {
+      icon: '🥗',
+      label: 'Nutrition Tips',
+      prompt: 'Give me nutrition advice for my fitness goals'
+    },
+    {
+      icon: '📊',
+      label: 'Track Progress',
+      prompt: 'How should I track my fitness progress?'
+    },
+    {
+      icon: '🎯',
+      label: 'Set Goals',
+      prompt: 'Help me set realistic fitness goals'
+    }
+  ];
 
   return (
     <div className="chat-container">
@@ -134,6 +181,38 @@ const Chat = () => {
           <span className="user-name">{user?.name}</span>
         </div>
         <div className="header-right">
+          <button 
+            onClick={() => navigate('/dashboard')} 
+            className="action-btn"
+          >
+            📊 Dashboard
+          </button>
+          <button 
+            onClick={() => navigate('/workouts')} 
+            className="action-btn"
+          >
+            📝 Workouts
+          </button>
+          <button 
+            onClick={() => navigate('/exercises')} 
+            className="action-btn"
+          >
+            💪 Exercises
+          </button>
+          <button 
+            onClick={() => navigate('/scheduler')} 
+            className="action-btn"
+          >
+            📅 Scheduler
+          </button>
+          {!user?.profile?.age && (
+            <button 
+              onClick={() => navigate('/profile-setup')} 
+              className="action-btn profile-btn"
+            >
+              ⚙️ Complete Profile
+            </button>
+          )}
           <button onClick={getWorkoutPlan} className="action-btn" disabled={loading}>
             📋 Get Workout Plan
           </button>
@@ -147,6 +226,27 @@ const Chat = () => {
       </div>
 
       <div className="messages-container">
+        {/* Quick Actions - Show when chat is empty or cleared */}
+        {showQuickActions && messages.length <= 1 && (
+          <div className="quick-actions-container">
+            <h3>🚀 Quick Actions</h3>
+            <p>Get started with one of these common requests:</p>
+            <div className="quick-actions-grid">
+              {quickActions.map((action, index) => (
+                <button
+                  key={index}
+                  className="quick-action-btn"
+                  onClick={() => action.action ? action.action() : handleQuickAction(action.prompt)}
+                  disabled={loading}
+                >
+                  <span className="action-icon">{action.icon}</span>
+                  <span className="action-label">{action.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {messages.map((msg, index) => (
           <div key={index} className={`message ${msg.role}`}>
             <div className="message-avatar">

@@ -40,15 +40,15 @@ router.post('/signup', async (req, res) => {
     // Generate token
     const token = generateToken(user._id);
 
+    // Return full user object without password
+    const userObject = user.toObject();
+    delete userObject.password;
+
     res.status(201).json({
       success: true,
       message: 'User registered successfully',
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email
-      }
+      user: userObject
     });
   } catch (error) {
     console.error('Signup error:', error);
@@ -96,17 +96,15 @@ router.post('/login', async (req, res) => {
     // Generate token
     const token = generateToken(user._id);
 
+    // Return full user object without password
+    const userObject = user.toObject();
+    delete userObject.password;
+
     res.json({
       success: true,
       message: 'Login successful',
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        profile: user.profile,
-        goals: user.goals
-      }
+      user: userObject
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -162,17 +160,41 @@ router.put('/profile', authMiddleware, async (req, res) => {
       });
     }
 
-    // Update fields if provided
-    if (profile) user.profile = { ...user.profile, ...profile };
-    if (goals) user.goals = { ...user.goals, ...goals };
-    if (preferences) user.preferences = { ...user.preferences, ...preferences };
+    // Update fields if provided - properly merge nested objects
+    if (profile) {
+      user.profile = user.profile || {};
+      Object.keys(profile).forEach(key => {
+        user.profile[key] = profile[key];
+      });
+      user.markModified('profile');
+    }
+    
+    if (goals) {
+      user.goals = user.goals || {};
+      Object.keys(goals).forEach(key => {
+        user.goals[key] = goals[key];
+      });
+      user.markModified('goals');
+    }
+    
+    if (preferences) {
+      user.preferences = user.preferences || {};
+      Object.keys(preferences).forEach(key => {
+        user.preferences[key] = preferences[key];
+      });
+      user.markModified('preferences');
+    }
 
     await user.save();
+
+    // Return user without password
+    const userObject = user.toObject();
+    delete userObject.password;
 
     res.json({
       success: true,
       message: 'Profile updated successfully',
-      user
+      user: userObject
     });
   } catch (error) {
     console.error('Update profile error:', error);

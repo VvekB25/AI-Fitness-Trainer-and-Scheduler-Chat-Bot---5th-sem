@@ -3,6 +3,11 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Auth from './components/Auth';
 import Chat from './components/Chat';
+import ProfileSetup from './components/ProfileSetup';
+import Dashboard from './components/Dashboard';
+import WorkoutHistory from './components/WorkoutHistory';
+import ExerciseLibrary from './components/ExerciseLibrary';
+import WorkoutScheduler from './components/WorkoutScheduler';
 import './App.css';
 
 const PrivateRoute = ({ children }) => {
@@ -36,7 +41,47 @@ const AppRoutes = () => {
     <Routes>
       <Route
         path="/auth"
-        element={isAuthenticated ? <Navigate to="/" /> : <Auth />}
+        element={isAuthenticated ? <Navigate to="/dashboard" /> : <Auth />}
+      />
+      <Route
+        path="/dashboard"
+        element={
+          <PrivateRoute>
+            <Dashboard />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/profile-setup"
+        element={
+          <PrivateRoute>
+            <ProfileSetup />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/workouts"
+        element={
+          <PrivateRoute>
+            <WorkoutHistory />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/exercises"
+        element={
+          <PrivateRoute>
+            <ExerciseLibrary />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/scheduler"
+        element={
+          <PrivateRoute>
+            <WorkoutScheduler />
+          </PrivateRoute>
+        }
       />
       <Route
         path="/"
@@ -46,7 +91,7 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
-      <Route path="*" element={<Navigate to="/" />} />
+      <Route path="*" element={<Navigate to="/dashboard" />} />
     </Routes>
   );
 };
